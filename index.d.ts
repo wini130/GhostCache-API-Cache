@@ -1,5 +1,3 @@
-// index.d.ts
-
 export interface IStorageAdapter {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<void>;

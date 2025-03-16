@@ -1,9 +1,7 @@
-// src/ghostCache.ts
-
 import axios, {
   AxiosInstance,
   AxiosResponse,
-  InternalAxiosRequestConfig
+  InternalAxiosRequestConfig,
 } from "axios";
 import { IStorageAdapter } from "./storage/IStorageAdapter.js";
 import { LocalStorageAdapter } from "./storage/LocalStorageAdapter.js";
@@ -20,7 +18,7 @@ if (typeof globalObj.fetch === "undefined") {
     globalObj.fetch = fetchPoly;
   } catch (err) {
     throw new Error(
-      "fetch is not defined. Install cross-fetch or another polyfill."
+      "fetch is not defined. Install cross-fetch or another polyfill.",
     );
   }
 }
@@ -32,7 +30,7 @@ if (typeof globalObj.Response === "undefined") {
     globalObj.Response = FetchResponse;
   } catch (err) {
     throw new Error(
-      "Response is not defined. Install cross-fetch or another polyfill."
+      "Response is not defined. Install cross-fetch or another polyfill.",
     );
   }
 }
@@ -55,7 +53,7 @@ const defaultConfig: Required<GhostCacheOptions> = {
   ttl: 60000,
   persistent: false,
   maxEntries: 100,
-  storage: new InMemoryStorageAdapter()
+  storage: new InMemoryStorageAdapter(),
 };
 
 let storageAdapter: IStorageAdapter | null = null;
@@ -65,7 +63,9 @@ let axiosInstances: AxiosInstance[] = [];
 /**
  * Picks correct storage adapter
  */
-function determineStorageAdapter(opt: GhostCacheOptions["storage"]): IStorageAdapter {
+function determineStorageAdapter(
+  opt: GhostCacheOptions["storage"],
+): IStorageAdapter {
   if (typeof opt === "object") return opt;
   switch (opt) {
     case "localStorage":
@@ -98,14 +98,14 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
   }
 
   // Setup Axios interceptors
-  axiosInstances.forEach(instance => {
+  axiosInstances.forEach((instance) => {
     instance.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
         const safeUrl = config.url ?? "";
         const cacheKey = JSON.stringify({
           url: safeUrl,
           params: config.params,
-          method: config.method
+          method: config.method,
         });
 
         // Check in-memory
@@ -115,7 +115,7 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
             return Promise.reject({
               __ghostCache__: true,
               data: JSON.parse(entry.data),
-              config
+              config,
             });
           } else {
             inMemoryCache.delete(cacheKey);
@@ -131,7 +131,7 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
               return Promise.reject({
                 __ghostCache__: true,
                 data: JSON.parse(parsed.data),
-                config
+                config,
               });
             } else {
               await storageAdapter.removeItem(cacheKey);
@@ -141,7 +141,7 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
 
         return config;
       },
-      (err: unknown) => Promise.reject(err)
+      (err: unknown) => Promise.reject(err),
     );
 
     instance.interceptors.response.use(
@@ -150,7 +150,7 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
         const cacheKey = JSON.stringify({
           url: safeUrl,
           params: res.config.params,
-          method: res.config.method
+          method: res.config.method,
         });
         cacheResponse(cacheKey, JSON.stringify(res.data));
         return res;
@@ -163,11 +163,11 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
             status: 200,
             statusText: "OK",
             headers: {},
-            config: e.config
+            config: e.config,
           } as AxiosResponse);
         }
         return Promise.reject(err);
-      }
+      },
     );
   });
 }
@@ -175,7 +175,10 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
 /**
  * Internal fetch handler
  */
-async function handleRequest(request: { url: RequestInfo; config?: RequestInit }): Promise<Response> {
+async function handleRequest(request: {
+  url: RequestInfo;
+  config?: RequestInit;
+}): Promise<Response> {
   const cacheKey = JSON.stringify(request);
 
   // in-memory check
@@ -184,7 +187,7 @@ async function handleRequest(request: { url: RequestInfo; config?: RequestInit }
     if (Date.now() - entry.timestamp < defaultConfig.ttl) {
       return new globalObj.Response(entry.data, {
         status: 200,
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
     } else {
       inMemoryCache.delete(cacheKey);
@@ -199,7 +202,7 @@ async function handleRequest(request: { url: RequestInfo; config?: RequestInit }
       if (Date.now() - entry.timestamp < defaultConfig.ttl) {
         return new globalObj.Response(entry.data, {
           status: 200,
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
         });
       } else {
         await storageAdapter.removeItem(cacheKey);

@@ -4,7 +4,7 @@ import {
   disableGhostCache,
   getCache,
   setCache,
-  registerAxios
+  registerAxios,
 } from "../src/index.js";
 import axios from "axios";
 
@@ -53,7 +53,7 @@ describe("GhostCache - API Caching Tests", () => {
     expect(d1).toHaveProperty("name", "ditto");
 
     // Wait 6 seconds to exceed the TTL of 5 seconds.
-    await new Promise(resolve => setTimeout(resolve, 6000));
+    await new Promise((resolve) => setTimeout(resolve, 6000));
 
     const r2 = await fetch(POKEMON_API);
     const d2 = await r2.json();

@@ -1,5 +1,3 @@
-// src/index.ts
-
 export {
   enableGhostCache,
   disableGhostCache,

@@ -40,7 +40,6 @@ Currently available as a Node.js package on NPM. **NPM Page:** [https://www.npmj
   - [Node.js Example](#nodejs-example)
 - [API Reference](#api-reference)
 - [Testing](#testing)
-- [Building & Publishing](#building--publishing)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -89,10 +88,10 @@ Example:
 import { enableGhostCache } from "ghost-cache";
 
 enableGhostCache({
-  ttl: 120000,          // Cache entries expire in 2 minutes
-  persistent: true,       // Enable persistent caching
-  maxEntries: 200,        // Allow up to 200 in-memory entries
-  storage: "localStorage" // Use localStorage for persistence
+  ttl: 120000, // Cache entries expire in 2 minutes
+  persistent: true, // Enable persistent caching
+  maxEntries: 200, // Allow up to 200 in-memory entries
+  storage: "localStorage", // Use localStorage for persistence
 });
 ```
 
@@ -110,8 +109,8 @@ enableGhostCache();
 
 // Regular fetch calls remain unchanged
 fetch("https://pokeapi.co/api/v2/pokemon/ditto")
-  .then(res => res.json())
-  .then(data => console.log("Fetched data:", data));
+  .then((res) => res.json())
+  .then((data) => console.log("Fetched data:", data));
 
 // Disable GhostCache to restore original fetch behavior
 // disableGhostCache();
@@ -133,8 +132,9 @@ const api = axios.create({ baseURL: "https://pokeapi.co/api/v2" });
 registerAxios(api);
 
 // Make requests using Axios. Subsequent calls will be served from the cache.
-api.get("/pokemon/ditto")
-  .then(response => console.log("Axios fetched:", response.data));
+api
+  .get("/pokemon/ditto")
+  .then((response) => console.log("Axios fetched:", response.data));
 ```
 
 ### Manual Cache API
@@ -163,7 +163,7 @@ Enable persistent caching using the browser's localStorage:
 ```ts
 enableGhostCache({
   persistent: true,
-  storage: "localStorage"
+  storage: "localStorage",
 });
 ```
 
@@ -174,7 +174,7 @@ Use sessionStorage for caching that lasts only for the browser session:
 ```ts
 enableGhostCache({
   persistent: true,
-  storage: "sessionStorage"
+  storage: "sessionStorage",
 });
 ```
 
@@ -185,7 +185,7 @@ Use IndexedDB for structured, persistent storage:
 ```ts
 enableGhostCache({
   persistent: true,
-  storage: "indexedDB"
+  storage: "indexedDB",
 });
 ```
 
@@ -202,7 +202,7 @@ await redisClient.connect();
 
 enableGhostCache({
   persistent: true,
-  storage: new RedisAdapter(redisClient)
+  storage: new RedisAdapter(redisClient),
 });
 ```
 
@@ -226,7 +226,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetch("https://pokeapi.co/api/v2/pokemon/ditto")
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setPokemon);
   }, []);
 
@@ -262,11 +262,12 @@ const api = axios.create({ baseURL: "https://pokeapi.co/api/v2" });
 registerAxios(api);
 
 // Use Axios to make requests
-api.get("/pokemon/ditto")
-  .then(response => {
+api
+  .get("/pokemon/ditto")
+  .then((response) => {
     console.log("Node.js Axios fetched:", response.data);
   })
-  .catch(error => {
+  .catch((error) => {
     console.error("Error:", error);
   });
 ```
@@ -313,33 +314,7 @@ GhostCache comes with a comprehensive Jest test suite. To run tests:
 
 Tests use the Pokémon API (`https://pokeapi.co/api/v2/pokemon/ditto`) to verify that caching works for both `fetch()` and Axios requests.
 
----
-
-## Building & Publishing
-
-### Building
-
-Compile the TypeScript source:
-
-```bash
-npm run build
-```
-
-### Publishing
-
-1. Login to npm:
-
-   ```bash
-   npm login
-   ```
-
-2. Publish the package:
-
-   ```bash
-   npm publish --access public
-   ```
-
----
+> Note: There may be path/import issues. If you encounter any, please check the test files and adjust the import paths accordingly.
 
 ## Contributing
 
@@ -361,10 +336,8 @@ For major changes, please open an issue first to discuss what you would like to 
 
 GhostCache is released under the MIT License.
 
----
-
 ## Final Remarks
 
 GhostCache is designed to be a simple yet powerful tool for improving the performance of your web applications by reducing unnecessary network calls. With support for multiple storage adapters and both `fetch()` and Axios, it adapts to a wide range of project needs.
 
-Happy caching!
+Happy caching! 🎉
