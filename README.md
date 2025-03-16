@@ -337,7 +337,7 @@ For major changes, please open an issue first to discuss what you would like to 
 
 ## License
 
-GhostCache is released under the MIT License.
+GhostCache is released under the [MIT License](LICENSE). Feel free to use, modify, and distribute it in your projects.
 
 ## Final Remarks
 
