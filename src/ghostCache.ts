@@ -61,7 +61,7 @@ let originalFetch: typeof globalObj.fetch | null = null;
 let axiosInstances: AxiosInstance[] = [];
 
 /**
- * Picks correct storage adapter
+ * Picks correct storage adapter based on config.
  */
 function determineStorageAdapter(
   opt: GhostCacheOptions["storage"],
@@ -78,7 +78,7 @@ function determineStorageAdapter(
 }
 
 /**
- * Enable GhostCache
+ * Enable GhostCache: intercept fetch and (optionally) Axios requests.
  */
 export function enableGhostCache(options: GhostCacheOptions = {}): void {
   // Merge user options into defaults
@@ -89,7 +89,7 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
     ? determineStorageAdapter(defaultConfig.storage)
     : null;
 
-  // Intercept fetch if not done
+  // Intercept global fetch if we haven't already
   if (!originalFetch) {
     originalFetch = globalObj.fetch.bind(globalObj);
     globalObj.fetch = async (url: RequestInfo, config?: RequestInit) => {
@@ -97,21 +97,24 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
     };
   }
 
-  // Setup Axios interceptors
+  // Set up Axios interceptors
   axiosInstances.forEach((instance) => {
     instance.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
-        const safeUrl = config.url ?? "";
+        const safeUrl: string = config.url ?? "";
         const cacheKey = JSON.stringify({
           url: safeUrl,
           params: config.params,
           method: config.method,
         });
 
-        // Check in-memory
+        // Check in-memory cache
         if (inMemoryCache.has(cacheKey)) {
           const entry = inMemoryCache.get(cacheKey)!;
           if (Date.now() - entry.timestamp < defaultConfig.ttl) {
+            console.log(
+              `[GhostCache] Using in-memory cache for request: ${safeUrl}`,
+            );
             return Promise.reject({
               __ghostCache__: true,
               data: JSON.parse(entry.data),
@@ -122,12 +125,15 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
           }
         }
 
-        // Check persistent
+        // Check persistent storage
         if (storageAdapter) {
           const stored = await storageAdapter.getItem(cacheKey);
           if (stored) {
             const parsed = JSON.parse(stored) as CacheEntry;
             if (Date.now() - parsed.timestamp < defaultConfig.ttl) {
+              console.log(
+                `[GhostCache] Using persistent cache for request: ${safeUrl}`,
+              );
               return Promise.reject({
                 __ghostCache__: true,
                 data: JSON.parse(parsed.data),
@@ -146,7 +152,7 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
 
     instance.interceptors.response.use(
       (res: AxiosResponse) => {
-        const safeUrl = res.config.url ?? "";
+        const safeUrl: string = res.config.url ?? "";
         const cacheKey = JSON.stringify({
           url: safeUrl,
           params: res.config.params,
@@ -173,7 +179,7 @@ export function enableGhostCache(options: GhostCacheOptions = {}): void {
 }
 
 /**
- * Internal fetch handler
+ * Handle fetch() requests with caching.
  */
 async function handleRequest(request: {
   url: RequestInfo;
@@ -181,10 +187,15 @@ async function handleRequest(request: {
 }): Promise<Response> {
   const cacheKey = JSON.stringify(request);
 
-  // in-memory check
+  // In-memory cache check
   if (inMemoryCache.has(cacheKey)) {
     const entry = inMemoryCache.get(cacheKey)!;
     if (Date.now() - entry.timestamp < defaultConfig.ttl) {
+      console.log(
+        `[GhostCache] (fetch) Using in-memory cache for: ${JSON.stringify(
+          request,
+        )}`,
+      );
       return new globalObj.Response(entry.data, {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -194,12 +205,17 @@ async function handleRequest(request: {
     }
   }
 
-  // storage check
+  // Persistent cache check
   if (storageAdapter) {
     const stored = await storageAdapter.getItem(cacheKey);
     if (stored) {
       const entry = JSON.parse(stored) as CacheEntry;
       if (Date.now() - entry.timestamp < defaultConfig.ttl) {
+        console.log(
+          `[GhostCache] (fetch) Using persistent cache for: ${JSON.stringify(
+            request,
+          )}`,
+        );
         return new globalObj.Response(entry.data, {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -210,10 +226,13 @@ async function handleRequest(request: {
     }
   }
 
+  console.log(
+    `[GhostCache] (fetch) Fetching from network: ${JSON.stringify(request)}`,
+  );
+  // Network fetch
   if (!originalFetch) {
     throw new Error("GhostCache: original fetch is missing.");
   }
-  // network fetch
   const response = await originalFetch(request.url, request.config);
   const cloned = response.clone();
   const textData = await cloned.text();
@@ -221,10 +240,14 @@ async function handleRequest(request: {
   return response;
 }
 
+/**
+ * Save to in-memory cache and persistent storage.
+ */
 function cacheResponse(cacheKey: string, data: string) {
-  const entry = { timestamp: Date.now(), data };
+  const entry: CacheEntry = { timestamp: Date.now(), data };
   inMemoryCache.set(cacheKey, entry);
 
+  // Enforce maximum cache entries
   if (inMemoryCache.size > defaultConfig.maxEntries) {
     const firstKey = inMemoryCache.keys().next().value;
     if (firstKey) inMemoryCache.delete(firstKey);
@@ -233,34 +256,45 @@ function cacheResponse(cacheKey: string, data: string) {
   if (storageAdapter) {
     storageAdapter.setItem(cacheKey, JSON.stringify(entry));
   }
+
+  console.log(`[GhostCache] Cached response for key: ${cacheKey}`);
 }
 
 /**
- * Manually set a cache
+ * Manually set a cache entry.
  */
 export async function setCache(key: string, value: any): Promise<void> {
   const cacheKey = JSON.stringify(key);
-  const entry = { timestamp: Date.now(), data: JSON.stringify(value) };
+  const entry: CacheEntry = {
+    timestamp: Date.now(),
+    data: JSON.stringify(value),
+  };
   inMemoryCache.set(cacheKey, entry);
-
   if (storageAdapter) {
     await storageAdapter.setItem(cacheKey, JSON.stringify(entry));
   }
+  console.log(`[GhostCache] Manually cached key: ${cacheKey}`);
 }
 
 /**
- * Get a cached item
+ * Retrieve a cache entry.
  */
 export async function getCache<T = any>(key: string): Promise<T | null> {
   const cacheKey = JSON.stringify(key);
   if (inMemoryCache.has(cacheKey)) {
     const entry = inMemoryCache.get(cacheKey)!;
+    console.log(
+      `[GhostCache] Retrieved from in-memory cache for key: ${cacheKey}`,
+    );
     return JSON.parse(entry.data) as T;
   }
   if (storageAdapter) {
     const stored = await storageAdapter.getItem(cacheKey);
     if (stored) {
       const entry = JSON.parse(stored) as CacheEntry;
+      console.log(
+        `[GhostCache] Retrieved from persistent cache for key: ${cacheKey}`,
+      );
       return JSON.parse(entry.data) as T;
     }
   }
@@ -268,17 +302,18 @@ export async function getCache<T = any>(key: string): Promise<T | null> {
 }
 
 /**
- * Clear all caches
+ * Clear all cache entries.
  */
 export function clearGhostCache(): void {
   inMemoryCache.clear();
   if (storageAdapter) {
     storageAdapter.clear();
   }
+  console.log("[GhostCache] Cache cleared");
 }
 
 /**
- * Disable GhostCache
+ * Disable GhostCache and restore the original fetch.
  */
 export function disableGhostCache(): void {
   if (originalFetch) {
@@ -287,11 +322,13 @@ export function disableGhostCache(): void {
   }
   axiosInstances = [];
   clearGhostCache();
+  console.log("[GhostCache] Disabled and restored original fetch");
 }
 
 /**
- * Register an Axios instance
+ * Register an Axios instance to intercept its requests.
  */
 export function registerAxios(instance: AxiosInstance): void {
   axiosInstances.push(instance);
+  console.log("[GhostCache] Registered an Axios instance");
 }

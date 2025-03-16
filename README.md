@@ -40,6 +40,7 @@ Currently available as a Node.js package on NPM. **NPM Page:** [https://www.npmj
   - [Node.js Example](#nodejs-example)
 - [API Reference](#api-reference)
 - [Testing](#testing)
+- [Demo Script](#demo-script)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -152,8 +153,6 @@ const profile = await getCache("user-profile");
 console.log("Manual cache:", profile);
 ```
 
----
-
 ## Storage Adapters
 
 ### localStorage
@@ -205,8 +204,6 @@ enableGhostCache({
   storage: new RedisAdapter(redisClient),
 });
 ```
-
----
 
 ## Advanced Examples
 
@@ -272,8 +269,6 @@ api
   });
 ```
 
----
-
 ## API Reference
 
 - **enableGhostCache(options?: GhostCacheOptions): void**  
@@ -293,8 +288,6 @@ api
 
 - **registerAxios(instance: AxiosInstance): void**  
   Registers an Axios instance so that its requests are intercepted and cached.
-
----
 
 ## Testing
 
@@ -316,21 +309,31 @@ Tests use the Pokémon API (`https://pokeapi.co/api/v2/pokemon/ditto`) to verify
 
 > Note: There may be path/import issues. If you encounter any, please check the test files and adjust the import paths accordingly.
 
+## Demo Script
+
+To run a demo script that showcases GhostCache in action, use the following command:
+
+```bash
+npm run demo
+```
+
+This will execute a script that demonstrates caching with both `fetch()` and Axios. Monitor the console for logs indicating cache hits and misses.
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
 
 1. **Fork the Repository**
 2. **Create a Feature Branch**
+
    ```bash
    git checkout -b feature/my-new-feature
    ```
+
 3. **Commit Your Changes**
 4. **Submit a Pull Request**
 
 For major changes, please open an issue first to discuss what you would like to change.
-
----
 
 ## License
 
