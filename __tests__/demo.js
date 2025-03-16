@@ -17,6 +17,8 @@ fetch("https://pokeapi.co/api/v2/pokemon/ditto")
 // Should output something like:
 // > node __tests__/demo.js
 //
+// [GhostCache] (fetch) Fetching from network: {"url":"https://pokeapi.co/api/v2/pokemon/ditto"}
+// [GhostCache] Cached response for key: {"url":"https://pokeapi.co/api/v2/pokemon/ditto"}
 // Fetched data: {
 //   abilities: [
 //     { ability: [Object], is_hidden: false, slot: 1 },
